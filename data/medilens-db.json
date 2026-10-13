@@ -1,0 +1,321 @@
+{
+  "users": [
+    {
+      "id": "usr_pat_01",
+      "name": "Alex Morgan",
+      "email": "alex.morgan@patient.medilens.health",
+      "passwordHash": "e2832098438d4e933448682a746065ae:bf0a2db346defa93666c990ca24522766ccdaf7d989676ff6c2b8978a8ee32d993ad3b88e4507a3e7f8c8d29c23c6cecca474f9f0ded75a203aa90c46c96183f",
+      "role": "patient",
+      "patientId": "PT-98042",
+      "avatar": "AM",
+      "createdAt": "2026-10-12T16:22:12.514Z"
+    },
+    {
+      "id": "usr_doc_01",
+      "name": "Dr. Sarah Lin, MD",
+      "email": "s.lin@cardio.medilens.health",
+      "passwordHash": "2f57ee7a1edb36cd6b86b774605b2a75:9a669439432569c37dfb324de691a4961a0940c318d408da0f0b100fede98c712f13e3eecef95dd4ea044210800338f9d14740c727447c56f9b0b546b0619c7f",
+      "role": "doctor",
+      "patientId": "DOC-10294",
+      "avatar": "SL",
+      "createdAt": "2026-10-12T16:22:12.616Z"
+    },
+    {
+      "name": "Maya Patel",
+      "email": "maya.patel@test.health",
+      "passwordHash": "1cdcfe55723b60385439a0d8f6f66af1:e557d115e3dc44a174376e44aa54ea99f24f4b4c9bffa8d4bb174a141517da07754e7fcea9ae0a1c56f20cee0644f6837c5ffe66347f30ce0e5cf76213bfb073",
+      "role": "patient",
+      "patientId": "PT-24906",
+      "avatar": "MP",
+      "id": "usr_pat_1791822936684",
+      "createdAt": "2026-10-12T16:35:36.684Z"
+    },
+    {
+      "name": "Dr. Marcus Vance",
+      "email": "m.vance@internal.medilens.health",
+      "passwordHash": "5de28911262fdd9df774acce38e2875c:bfe89617c881bad93a11ac775508e3888c16c2dd0fc963eda2e3fbff75b9b84719e71f3f999598aa972a4298e9327eb20aebf5b94e1d128fe6fa092ec931f92e",
+      "role": "doctor",
+      "patientId": "DOC-27105",
+      "avatar": "DM",
+      "id": "usr_doc_1791826393005",
+      "createdAt": "2026-10-12T17:33:13.005Z"
+    },
+    {
+      "name": "Test Patient User",
+      "email": "test.patient@medilens.health",
+      "passwordHash": "066af5906b1b9df86979f9840ffcac6c:668f732e89b40200bf377d51083f8bfb500e428afc23502330889f83b27b9d4fa4f866f0d1c64ad3993b7744c9dcc612a9789e67a693715ba8aadaf47fe4c79f",
+      "role": "patient",
+      "patientId": "PT-95455",
+      "avatar": "TP",
+      "id": "usr_pat_1791827433785",
+      "createdAt": "2026-10-12T17:50:33.785Z"
+    },
+    {
+      "name": "Dr. Test Physician",
+      "email": "test.doctor@medilens.health",
+      "passwordHash": "ce7bd1514f2fef07a9db2bb936eddf93:20ca033dbc77ccae6518fc8d92d616efbbbc56ed3fd42cc44ab3b2c47c80c59b05e2d0f14bf28e2e29fdf2c633ee1723a2ff8cea7e99318d88fa7f0ec32be1ed",
+      "role": "doctor",
+      "patientId": "DOC-16849",
+      "avatar": "DT",
+      "id": "usr_doc_1791827433981",
+      "createdAt": "2026-10-12T17:50:33.981Z"
+    }
+  ],
+  "sessions": {
+    "8c8d8a01544b59d484a19268c633211f2ddeba42bd458d720e17fa2199e49d40": {
+      "token": "8c8d8a01544b59d484a19268c633211f2ddeba42bd458d720e17fa2199e49d40",
+      "userId": "usr_doc_01",
+      "role": "doctor",
+      "createdAt": 1791822936604,
+      "expiresAt": 1792427736604
+    },
+    "5eb58dcdd7b902f035ca9c3e2e33efa1d78399183e8e6f3812fd1fc8bf3f39dc": {
+      "token": "5eb58dcdd7b902f035ca9c3e2e33efa1d78399183e8e6f3812fd1fc8bf3f39dc",
+      "userId": "usr_pat_1791822936684",
+      "role": "patient",
+      "createdAt": 1791822936686,
+      "expiresAt": 1792427736686
+    },
+    "b3d3f8a45c0360f318fb4db75b67d4512a814e094bcb40762db86546dd03fa7b": {
+      "token": "b3d3f8a45c0360f318fb4db75b67d4512a814e094bcb40762db86546dd03fa7b",
+      "userId": "usr_pat_01",
+      "role": "patient",
+      "createdAt": 1791823016742,
+      "expiresAt": 1792427816742
+    },
+    "3afa7f5577428814e9d6b8ccd07cfee28c3d425bae56e3e8ac7da1e8cf740b8d": {
+      "token": "3afa7f5577428814e9d6b8ccd07cfee28c3d425bae56e3e8ac7da1e8cf740b8d",
+      "userId": "usr_doc_01",
+      "role": "doctor",
+      "createdAt": 1791823016857,
+      "expiresAt": 1792427816857
+    },
+    "ddd5bb08c2903040385bc8a2905d6e51e718aca03f6460087e5d756a9a3bc962": {
+      "token": "ddd5bb08c2903040385bc8a2905d6e51e718aca03f6460087e5d756a9a3bc962",
+      "userId": "usr_pat_01",
+      "role": "patient",
+      "createdAt": 1791824034510,
+      "expiresAt": 1792428834510
+    },
+    "5e1b14db6a97e58c12de8b2009d36afadb27f5fa46ea8eb5557b5107838e97cf": {
+      "token": "5e1b14db6a97e58c12de8b2009d36afadb27f5fa46ea8eb5557b5107838e97cf",
+      "userId": "usr_doc_01",
+      "role": "doctor",
+      "createdAt": 1791824034617,
+      "expiresAt": 1792428834617
+    },
+    "d34f9c8dc284ca7d68a00ea19f8888151822291e3c276cffac04ebff904b6a0b": {
+      "token": "d34f9c8dc284ca7d68a00ea19f8888151822291e3c276cffac04ebff904b6a0b",
+      "userId": "usr_pat_01",
+      "role": "patient",
+      "createdAt": 1791825397769,
+      "expiresAt": 1792430197769
+    },
+    "fd4d7870aead38213e48d1f828280b973189b86973f180252de2f17f5419858b": {
+      "token": "fd4d7870aead38213e48d1f828280b973189b86973f180252de2f17f5419858b",
+      "userId": "usr_doc_01",
+      "role": "doctor",
+      "createdAt": 1791825397877,
+      "expiresAt": 1792430197877
+    },
+    "7b91bbcf70f3ec49ef39586f2b432aeb7e427453af5972b5e336c5e18b53d59a": {
+      "token": "7b91bbcf70f3ec49ef39586f2b432aeb7e427453af5972b5e336c5e18b53d59a",
+      "userId": "usr_pat_01",
+      "role": "patient",
+      "createdAt": 1791825398065,
+      "expiresAt": 1792430198065
+    },
+    "88cbafee1271484bc85c4d490bbda0cf05ef71bd3b391fcbf846b053938389b3": {
+      "token": "88cbafee1271484bc85c4d490bbda0cf05ef71bd3b391fcbf846b053938389b3",
+      "userId": "usr_doc_1791826393005",
+      "role": "doctor",
+      "createdAt": 1791826393008,
+      "expiresAt": 1792431193008
+    },
+    "35dfee4df8f131f711e444c0034bb98f075b10bc80554ea3badb413cba7806d4": {
+      "token": "35dfee4df8f131f711e444c0034bb98f075b10bc80554ea3badb413cba7806d4",
+      "userId": "usr_doc_1791826393005",
+      "role": "doctor",
+      "createdAt": 1791826393118,
+      "expiresAt": 1792431193118
+    },
+    "bf75636bedce55123ba1fac8aaf667d0d94556bc727e984c1fecbf565726a2f3": {
+      "token": "bf75636bedce55123ba1fac8aaf667d0d94556bc727e984c1fecbf565726a2f3",
+      "userId": "usr_pat_1791827433785",
+      "role": "patient",
+      "createdAt": 1791827433789,
+      "expiresAt": 1792432233789
+    },
+    "2fd8bb226450c50c48f585486acafda8b9a921753e8933ec1ad9b76ad20bab87": {
+      "token": "2fd8bb226450c50c48f585486acafda8b9a921753e8933ec1ad9b76ad20bab87",
+      "userId": "usr_pat_1791827433785",
+      "role": "patient",
+      "createdAt": 1791827433894,
+      "expiresAt": 1792432233894
+    },
+    "1b918ae28d8c7f4644a3bd6ad9b56b23cbef1d59095c6f98532e82abdb2628ee": {
+      "token": "1b918ae28d8c7f4644a3bd6ad9b56b23cbef1d59095c6f98532e82abdb2628ee",
+      "userId": "usr_doc_1791827433981",
+      "role": "doctor",
+      "createdAt": 1791827433983,
+      "expiresAt": 1792432233983
+    },
+    "f85197eea370313394e7141f700ad1ef5f7bacbc342e32af70f4af5b799dc098": {
+      "token": "f85197eea370313394e7141f700ad1ef5f7bacbc342e32af70f4af5b799dc098",
+      "userId": "usr_doc_1791827433981",
+      "role": "doctor",
+      "createdAt": 1791827434094,
+      "expiresAt": 1792432234094
+    }
+  },
+  "reports": [
+    {
+      "id": "REP-2026-0891",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "fileName": "Comprehensive_Metabolic_Panel_Oct2026.pdf",
+      "fileSizeBytes": 1845120,
+      "fileType": "application/pdf",
+      "reportType": "Blood Test",
+      "uploadDate": "2026-10-08 09:30 AM",
+      "status": "Verified",
+      "notes": "Fasting glucose, liver panel, and renal function within normal ranges.",
+      "isDemoData": true
+    },
+    {
+      "id": "REP-2026-0742",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "fileName": "Lumbar_Spine_Digital_XRay.png",
+      "fileSizeBytes": 2450300,
+      "fileType": "image/png",
+      "reportType": "X-Ray",
+      "uploadDate": "2026-09-24 02:15 PM",
+      "status": "Verified",
+      "notes": "Bilateral lumbar radiograph series. Mild L4-L5 disc space narrowing noted.",
+      "isDemoData": true
+    },
+    {
+      "id": "REP-2026-0619",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "fileName": "Resting_12_Lead_ECG_Report.pdf",
+      "fileSizeBytes": 945200,
+      "fileType": "application/pdf",
+      "reportType": "Cardiology / ECG",
+      "uploadDate": "2026-08-11 11:45 AM",
+      "status": "Verified",
+      "notes": "Normal sinus rhythm, HR 72 bpm, no acute ST-T changes.",
+      "isDemoData": true
+    },
+    {
+      "id": "REP-2026-0488",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "fileName": "Dermatology_Biopsy_Pathology.jpg",
+      "fileSizeBytes": 1240000,
+      "fileType": "image/jpeg",
+      "reportType": "Pathology",
+      "uploadDate": "2026-07-02 04:20 PM",
+      "status": "Archived",
+      "notes": "Benign intradermal nevus biopsy confirmation.",
+      "isDemoData": true
+    },
+    {
+      "id": "REP-2026-0312",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "fileName": "Comprehensive_Metabolic_Panel_May2026.pdf",
+      "fileSizeBytes": 1720450,
+      "fileType": "application/pdf",
+      "reportType": "Blood Test",
+      "uploadDate": "2026-05-14 08:45 AM",
+      "status": "Verified",
+      "notes": "Semi-annual baseline blood chemistry panel. Baseline fasting glucose, lipid profile, and renal biomarkers.",
+      "isDemoData": true
+    },
+    {
+      "id": "REP-2026-0155",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "fileName": "Complete_Blood_Count_Jan2026.pdf",
+      "fileSizeBytes": 1410200,
+      "fileType": "application/pdf",
+      "reportType": "Blood Test",
+      "uploadDate": "2026-01-20 10:15 AM",
+      "status": "Verified",
+      "notes": "Baseline hematology study. White blood cell count, hemoglobin, platelets.",
+      "isDemoData": true
+    }
+  ],
+  "appointments": [
+    {
+      "id": "APT-2026-301",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "doctorId": "DOC-10294",
+      "doctorName": "Dr. Sarah Lin, MD",
+      "doctorSpecialty": "Cardiology & Preventive Medicine",
+      "requestedDate": "2026-10-18",
+      "requestedTime": "10:30 AM",
+      "reasonForVisit": "Routine consultation on Comprehensive Metabolic Panel and Resting ECG findings.",
+      "status": "Accepted",
+      "doctorResponse": "Appointment confirmed. Please arrive 10 minutes early with your current medication list.",
+      "authorizedReportIds": [
+        "REP-2026-0891",
+        "REP-2026-0619"
+      ],
+      "createdAt": "2026-10-09 11:20 AM",
+      "patientRelevantVitals": {
+        "age": 37,
+        "bloodType": "O+",
+        "allergies": "Penicillin (mild rash)"
+      }
+    },
+    {
+      "id": "APT-2026-302",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "doctorId": "DOC-10294",
+      "doctorName": "Dr. Sarah Lin, MD",
+      "doctorSpecialty": "Cardiology & Preventive Medicine",
+      "requestedDate": "2026-10-25",
+      "requestedTime": "02:00 PM",
+      "reasonForVisit": "Review spinal radiograph observations regarding L4-L5 disc space and physical posture.",
+      "status": "Pending",
+      "authorizedReportIds": [
+        "REP-2026-0742"
+      ],
+      "createdAt": "2026-10-11 04:15 PM",
+      "patientRelevantVitals": {
+        "age": 37,
+        "bloodType": "O+",
+        "allergies": "Penicillin (mild rash)"
+      }
+    },
+    {
+      "id": "APT-2026-289",
+      "patientId": "PT-98042",
+      "patientName": "Alex Morgan",
+      "doctorId": "DOC-10388",
+      "doctorName": "Dr. Marcus Vance, MD",
+      "doctorSpecialty": "Internal Medicine & Endocrinology",
+      "requestedDate": "2026-10-05",
+      "requestedTime": "09:00 AM",
+      "reasonForVisit": "Annual endocrinology screening and fasting blood glucose review.",
+      "status": "Rejected",
+      "doctorResponse": "No available slots during this clinic block. Please select another date.",
+      "suggestedAlternativeDate": "2026-10-22",
+      "suggestedAlternativeTime": "11:00 AM",
+      "authorizedReportIds": [
+        "REP-2026-0891"
+      ],
+      "createdAt": "2026-10-02 01:45 PM",
+      "patientRelevantVitals": {
+        "age": 37,
+        "bloodType": "O+",
+        "allergies": "Penicillin (mild rash)"
+      }
+    }
+  ]
+}
