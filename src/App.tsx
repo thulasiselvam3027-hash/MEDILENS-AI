@@ -14,6 +14,7 @@ import {
   type Appointment,
   type Language,
 } from './types'
+import { supabase, isSupabaseConfigured, mapSupabaseUserToSession } from './supabaseClient'
 import './App.css'
 
 // Initial Realistic Fictional Medical Reports
@@ -163,11 +164,50 @@ export default function App() {
 
   // Verify stored session token on mount
   useEffect(() => {
+    let isMounted = true
+
+    if (isSupabaseConfigured()) {
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (!isMounted) return
+        if (session?.user && !error) {
+          const user = mapSupabaseUserToSession(session.user)
+          setCurrentUser(user)
+          setAuthToken(session.access_token)
+        } else {
+          setCurrentUser(null)
+          setAuthToken(null)
+          try {
+            localStorage.removeItem('medilens_auth_token')
+          } catch {
+            // ignore
+          }
+        }
+        setIsVerifyingSession(false)
+      })
+
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!isMounted) return
+        if (session?.user) {
+          const user = mapSupabaseUserToSession(session.user)
+          setCurrentUser(user)
+          setAuthToken(session.access_token)
+        } else {
+          setCurrentUser(null)
+          setAuthToken(null)
+        }
+      })
+
+      return () => {
+        isMounted = false
+        authListener.subscription.unsubscribe()
+      }
+    }
+
     if (!authToken) {
+      setIsVerifyingSession(false)
       return
     }
 
-    let isMounted = true
     fetch('/api/auth/me', {
       headers: {
         Authorization: `Bearer ${authToken}`,
@@ -674,7 +714,13 @@ export default function App() {
   }
 
   const handleSignOut = async () => {
-    if (authToken) {
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.auth.signOut()
+      } catch (err) {
+        console.warn('Supabase sign out error:', err)
+      }
+    } else if (authToken) {
       try {
         await fetch('/api/auth/logout', {
           method: 'POST',

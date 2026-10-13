@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Language, UserRole, UserSession } from './types'
 import { t } from './i18n'
+import { supabase, isSupabaseConfigured, mapSupabaseUserToSession } from './supabaseClient'
 import './LoginPage.css'
 
 interface LoginPageProps {
@@ -112,6 +113,62 @@ export default function LoginPage({
 
       setIsSubmitting(true)
 
+      // 1. If Supabase credentials are configured in .env, use Supabase Auth
+      if (isSupabaseConfigured()) {
+        try {
+          const assignedId =
+            selectedRole === 'patient'
+              ? `PT-${Math.floor(10000 + Math.random() * 90000)}`
+              : `DOC-${Math.floor(10000 + Math.random() * 90000)}`
+
+          const { data, error } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password,
+            options: {
+              data: {
+                name: name.trim(),
+                role: selectedRole,
+                patientId: assignedId,
+              },
+            },
+          })
+
+          if (error) {
+            setErrorMessage(error.message)
+            setIsSubmitting(false)
+            return
+          }
+
+          if (data.user) {
+            const user = mapSupabaseUserToSession(data.user)
+            const token = data.session?.access_token || `sb_session_${data.user.id}`
+            if (rememberMe) {
+              localStorage.setItem('medilens_auth_token', token)
+            } else {
+              sessionStorage.setItem('medilens_auth_token', token)
+            }
+
+            setSuccessMessage(
+              language === 'ta'
+                ? 'Supabase கணக்கு உருவாக்கப்பட்டது! உள்நுழைகிறது...'
+                : 'Supabase account created successfully! Logging you in...'
+            )
+
+            setTimeout(() => {
+              setIsSubmitting(false)
+              onLogin(user, token)
+            }, 600)
+            return
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Supabase signup failed.'
+          setErrorMessage(msg)
+          setIsSubmitting(false)
+          return
+        }
+      }
+
+      // 2. Fallback to Local API
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
@@ -161,6 +218,50 @@ export default function LoginPage({
       // Sign In Mode
       setIsSubmitting(true)
 
+      // 1. If Supabase is configured, use Supabase Auth
+      if (isSupabaseConfigured()) {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password,
+          })
+
+          if (error) {
+            setErrorMessage(error.message)
+            setLoginDiagnostic({
+              stage: 'SUPABASE_AUTH',
+              category: 'INVALID_CREDENTIALS',
+            })
+            setIsSubmitting(false)
+            return
+          }
+
+          if (data.user && data.session) {
+            const user = mapSupabaseUserToSession(data.user)
+            const token = data.session.access_token
+
+            if (rememberMe) {
+              localStorage.setItem('medilens_auth_token', token)
+            } else {
+              sessionStorage.setItem('medilens_auth_token', token)
+            }
+
+            setLoginDiagnostic(null)
+            setTimeout(() => {
+              setIsSubmitting(false)
+              onLogin(user, token)
+            }, 400)
+            return
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Supabase sign-in failed.'
+          setErrorMessage(msg)
+          setIsSubmitting(false)
+          return
+        }
+      }
+
+      // 2. Fallback to Local API
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
@@ -424,6 +525,26 @@ export default function LoginPage({
                 ? 'நோயாளி அல்லது மருத்துவராக பதிவு செய்து கடவுச்சொல்லை அமைக்கவும்.'
                 : 'Register as a patient or physician with a secure password.'}
             </p>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              background: isSupabaseConfigured() ? 'rgba(16, 185, 129, 0.12)' : 'rgba(59, 130, 246, 0.1)',
+              color: isSupabaseConfigured() ? '#059669' : '#2563eb',
+              border: `1px solid ${isSupabaseConfigured() ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.25)'}`,
+              marginTop: '8px'
+            }}>
+              <span>{isSupabaseConfigured() ? '🟢' : '⚡'}</span>
+              <span>
+                {isSupabaseConfigured()
+                  ? (language === 'ta' ? 'Supabase கிளவுட் அங்கீகாரம் இணைக்கப்பட்டுள்ளது' : 'Supabase Cloud Auth Active')
+                  : (language === 'ta' ? 'Supabase ரெடி (.env-ல் URL & Key வழங்கி இணைக்கலாம்)' : 'Supabase Ready (Add credentials in .env to connect)')}
+              </span>
+            </div>
           </div>
 
           {/* Role Selector Tabs */}
