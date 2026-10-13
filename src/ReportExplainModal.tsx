@@ -8,6 +8,7 @@ import {
   BIOMARKER_DICTIONARY,
 } from './reportExplainer'
 import { t } from './i18n'
+import { VoiceRecognitionSession, isSpeechRecognitionSupported } from './voiceRecognition'
 import './ReportExplainModal.css'
 
 interface ReportExplainModalProps {
@@ -18,48 +19,6 @@ interface ReportExplainModalProps {
 }
 
 type ModalTab = 'review' | 'explanations' | 'chat'
-
-// Web Speech Recognition types for browser-native speech input
-interface SpeechRecognitionEventLike extends Event {
-  resultIndex: number
-  results: {
-    length: number
-    [index: number]: {
-      isFinal: boolean
-      [index: number]: {
-        transcript: string
-      }
-    }
-  }
-}
-
-interface SpeechRecognitionErrorEventLike extends Event {
-  error: string
-  message?: string
-}
-
-interface SpeechRecognitionInstance {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  maxAlternatives: number
-  start: () => void
-  stop: () => void
-  abort: () => void
-  onstart: (() => void) | null
-  onend: (() => void) | null
-  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null
-}
-
-function getSpeechRecognitionConstructor(): (new () => SpeechRecognitionInstance) | null {
-  if (typeof window === 'undefined') return null
-  const win = window as unknown as {
-    SpeechRecognition?: new () => SpeechRecognitionInstance
-    webkitSpeechRecognition?: new () => SpeechRecognitionInstance
-  }
-  return win.SpeechRecognition || win.webkitSpeechRecognition || null
-}
 
 /**
  * Clean markdown symbols for natural text-to-speech without altering test names, numbers, or units.
@@ -114,8 +73,31 @@ export default function ReportExplainModal({
   const [voiceProcessing, setVoiceProcessing] = useState(false)
   const [voiceError, setVoiceError] = useState<string | null>(null)
   const [voiceHint, setVoiceHint] = useState<string | null>(null)
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
-  const isSpeechRecSupported = typeof window !== 'undefined' && Boolean(getSpeechRecognitionConstructor())
+  const [voiceLang, setVoiceLang] = useState<'ta-IN' | 'en-IN' | 'en-US'>(() =>
+    language === 'ta' ? 'ta-IN' : 'en-IN'
+  )
+  const [audioLevel, setAudioLevel] = useState(0)
+  const voiceSessionRef = useRef<VoiceRecognitionSession | null>(null)
+  const isSpeechRecSupported = isSpeechRecognitionSupported()
+
+  // Sync voiceLang when language prop updates
+  useEffect(() => {
+    const nextLang = language === 'ta' ? 'ta-IN' : 'en-IN'
+    setVoiceLang(nextLang)
+    if (voiceSessionRef.current) {
+      voiceSessionRef.current.setLanguage(nextLang)
+    }
+  }, [language])
+
+  // Clean up voice session on unmount
+  useEffect(() => {
+    return () => {
+      if (voiceSessionRef.current) {
+        voiceSessionRef.current.stop()
+        voiceSessionRef.current = null
+      }
+    }
+  }, [])
 
   // Spoken Responses (SpeechSynthesis) State
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null)
@@ -263,13 +245,12 @@ export default function ReportExplainModal({
     }, 600)
   }
 
-  // Start Speech Recognition using browser native Web Speech API
-  const handleStartListening = () => {
+  // Start Speech Recognition using VoiceRecognitionSession
+  const handleStartListening = async () => {
     setVoiceError(null)
     setVoiceHint(null)
 
-    const SpeechRec = getSpeechRecognitionConstructor()
-    if (!SpeechRec) {
+    if (!isSpeechRecSupported) {
       setVoiceError(t('voiceNotSupported', language))
       return
     }
@@ -280,97 +261,66 @@ export default function ReportExplainModal({
       setSpeakingMessageId(null)
     }
 
-    try {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort()
-        recognitionRef.current = null
-      }
+    if (voiceSessionRef.current) {
+      voiceSessionRef.current.stop()
+      voiceSessionRef.current = null
+    }
 
-      const rec = new SpeechRec()
-      // Request Tamil locale ta-IN when Tamil is selected, en-IN when English is selected
-      rec.lang = language === 'ta' ? 'ta-IN' : 'en-IN'
-      rec.continuous = false
-      rec.interimResults = true
-      rec.maxAlternatives = 1
-
-      rec.onstart = () => {
+    const session = new VoiceRecognitionSession(voiceLang, {
+      onStart: () => {
         setIsListening(true)
         setVoiceProcessing(false)
         setVoiceError(null)
-      }
-
-      rec.onresult = (event: SpeechRecognitionEventLike) => {
-        let finalTranscript = ''
-        let interimTranscript = ''
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const item = event.results[i]
-          if (item.isFinal) {
-            finalTranscript += item[0].transcript
-          } else {
-            interimTranscript += item[0].transcript
-          }
-        }
-
-        const spokenText = (finalTranscript || interimTranscript).trim()
-        if (spokenText) {
-          // Put recognized speech into the existing text input for patient review/editing
-          setChatInput(spokenText)
-          setVoiceProcessing(true)
-        }
-      }
-
-      rec.onerror = (event: SpeechRecognitionErrorEventLike) => {
+      },
+      onTranscriptChange: (text) => {
+        setChatInput(text)
+        setVoiceProcessing(true)
+      },
+      onAudioLevel: (level) => {
+        setAudioLevel(level)
+      },
+      onError: (errType, message) => {
         setIsListening(false)
         setVoiceProcessing(false)
-
-        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        setAudioLevel(0)
+        if (errType === 'permission_denied') {
           setVoiceError(t('micPermissionDenied', language))
-        } else if (event.error === 'no-speech') {
-          setVoiceError(t('micNoSpeech', language))
-        } else if (event.error === 'network') {
+        } else if (errType === 'network') {
           setVoiceError(t('micNetworkError', language))
-        } else if (event.error !== 'aborted') {
-          setVoiceError(
-            language === 'ta'
-              ? `குரல் ஏற்பி பிழை (${event.error}). தயவுசெய்து தட்டச்சு செய்யவும்.`
-              : `Voice recognition error (${event.error}). Please type your message.`
-          )
+        } else {
+          setVoiceError(message)
         }
-      }
-
-      rec.onend = () => {
+      },
+      onEnd: () => {
         setIsListening(false)
         setVoiceProcessing(false)
-        recognitionRef.current = null
+        setAudioLevel(0)
+        voiceSessionRef.current = null
         setVoiceHint(t('micReviewHint', language))
-      }
+      },
+    })
 
-      recognitionRef.current = rec
-      rec.start()
-    } catch {
-      setIsListening(false)
-      setVoiceProcessing(false)
-      setVoiceError(
-        language === 'ta'
-          ? 'மைக்ரோஃபோனைத் தொடங்குவதில் பிழை ஏற்பட்டது.'
-          : 'Could not initialize speech recognition.'
-      )
-    }
+    voiceSessionRef.current = session
+    await session.start()
   }
 
   // Stop Speech Recognition
   const handleStopListening = () => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop()
-      } catch {
-        recognitionRef.current.abort()
-      }
-      recognitionRef.current = null
+    if (voiceSessionRef.current) {
+      voiceSessionRef.current.stop()
+      voiceSessionRef.current = null
     }
     setIsListening(false)
     setVoiceProcessing(false)
+    setAudioLevel(0)
+  }
+
+  const handleToggleVoiceLang = () => {
+    const nextLang = voiceLang === 'ta-IN' ? 'en-IN' : 'ta-IN'
+    setVoiceLang(nextLang)
+    if (voiceSessionRef.current) {
+      voiceSessionRef.current.setLanguage(nextLang)
+    }
   }
 
   // Speak Chatbot Response using Browser SpeechSynthesis
@@ -442,13 +392,9 @@ export default function ReportExplainModal({
   // Cleanup speech resources on unmount
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort()
-        } catch {
-          // ignore
-        }
-        recognitionRef.current = null
+      if (voiceSessionRef.current) {
+        voiceSessionRef.current.stop()
+        voiceSessionRef.current = null
       }
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel()
@@ -1078,18 +1024,25 @@ export default function ReportExplainModal({
                 <div
                   className={`voice-status-bar ${
                     voiceError
-                      ? 'voice-status-error'
+                      ? 'error'
                       : isListening
-                      ? 'voice-status-listening'
-                      : 'voice-status-info'
+                      ? 'listening'
+                      : voiceProcessing
+                      ? 'processing'
+                      : 'hint'
                   }`}
                   role="status"
                 >
-                  <div className="voice-status-content">
+                  <div className="status-live-indicator">
                     {isListening && (
-                      <span className="voice-pulse-indicator" aria-hidden="true">
-                        <span className="voice-pulse-dot" />
-                        <span className="voice-pulse-ring" />
+                      <span className="live-meter-wrap" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="pulse-dot" />
+                        {/* Real-time audio waveform response */}
+                        <span className="audio-wave-bars" aria-hidden="true" style={{ display: 'inline-flex', gap: '3px', alignItems: 'flex-end', height: '16px' }}>
+                          <span style={{ width: '3px', height: `${Math.max(4, Math.min(16, (audioLevel * 0.16) + 4))}px`, background: '#ef4444', borderRadius: '1.5px', transition: 'height 0.08s ease' }} />
+                          <span style={{ width: '3px', height: `${Math.max(5, Math.min(16, (audioLevel * 0.22) + 6))}px`, background: '#ef4444', borderRadius: '1.5px', transition: 'height 0.08s ease' }} />
+                          <span style={{ width: '3px', height: `${Math.max(4, Math.min(16, (audioLevel * 0.14) + 4))}px`, background: '#ef4444', borderRadius: '1.5px', transition: 'height 0.08s ease' }} />
+                        </span>
                       </span>
                     )}
                     {voiceError && <span className="voice-status-icon">⚠️</span>}
@@ -1100,32 +1053,62 @@ export default function ReportExplainModal({
                       {voiceError ||
                         voiceHint ||
                         (isListening
-                          ? `${t('voiceListeningActive', language)} (${
-                              language === 'ta' ? 'தமிழ் ta-IN' : 'English en-IN'
-                            })`
+                          ? language === 'ta'
+                            ? 'குரலைக் கேட்கிறது... பேசுங்கள்'
+                            : 'Listening... speak now'
                           : '')}
                     </span>
+
+                    {/* Instant Voice Language Switcher */}
+                    <button
+                      type="button"
+                      className="btn-voice-lang-toggle"
+                      onClick={handleToggleVoiceLang}
+                      title="Click to switch speech language"
+                      style={{
+                        marginLeft: '8px',
+                        padding: '2px 8px',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        background: '#ffffff',
+                        color: '#0f766e',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      🗣️ {voiceLang === 'ta-IN' ? 'தமிழ் (ta-IN)' : 'English (en-IN)'} ⇄
+                    </button>
                   </div>
-                  {isListening && (
-                    <button
-                      type="button"
-                      className="voice-status-stop-btn"
-                      onClick={handleStopListening}
-                      title={t('voiceInputStop', language)}
-                    >
-                      ✕ {language === 'ta' ? 'நிறுத்து' : 'Stop'}
-                    </button>
-                  )}
-                  {voiceError && (
-                    <button
-                      type="button"
-                      className="voice-status-dismiss-btn"
-                      onClick={() => setVoiceError(null)}
-                      title="Dismiss"
-                    >
-                      ✕
-                    </button>
-                  )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {isListening && (
+                      <button
+                        type="button"
+                        className="btn-stop-listening"
+                        onClick={handleStopListening}
+                        title={t('voiceInputStop', language)}
+                      >
+                        ✕ {language === 'ta' ? 'முடிந்தது' : 'Done'}
+                      </button>
+                    )}
+                    {(voiceError || voiceHint) && !isListening && (
+                      <button
+                        type="button"
+                        className="btn-dismiss-hint"
+                        onClick={() => {
+                          setVoiceError(null)
+                          setVoiceHint(null)
+                        }}
+                        title="Dismiss"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 
